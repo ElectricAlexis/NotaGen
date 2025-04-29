@@ -1,0 +1,38 @@
+services:
+  notagen:
+    image: notagen:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        UNAME: ${UNAME:-user}
+        PUID: ${PUID:-1000}
+        PGID: ${PGID:-1000}
+        DOCKER_GID: ${DOCKER_GID:-965}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - ./demo.sh
+    ports:
+      - 7861:7861
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - HF_HOME=/data/cache/datasets
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+    volumes:
+      - .:/src:rw
+      - cache:/data/cache:rw
+volumes:
+  cache:
+    driver: local
